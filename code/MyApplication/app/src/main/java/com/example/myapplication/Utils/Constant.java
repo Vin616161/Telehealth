@@ -13,5 +13,7 @@ public class Constant {
     public static final String QUESTION_URL="http://120.79.88.20:8080/v1/patient/queryQSOfDiseases";
     public static final String M70C_URL="http://120.79.88.20:8080/v1/patient/queryQSOfDiseases";
     public static final String WBP_URL="http://120.79.88.20:8080/v1/patient/queryQSOfDiseases";
+    public static final String LOADREPORT_URL="http://120.79.88.20:8080/v1/patient/queryQSOfDiseases/";
+
 
 }

@@ -1,12 +1,17 @@
 package com.example.myapplication.Activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
@@ -77,6 +82,9 @@ public class LoginActivity extends Activity {
         rem_pw= (CheckBox) findViewById(R.id.remPwd);
         auto_login = (CheckBox) findViewById(R.id.login_autoLogin);
         forgetPwdText = (TextView) findViewById(R.id.forgetPwdText);
+        if(ContextCompat.checkSelfPermission(LoginActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(LoginActivity.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},233);
+        }
 
 
         handler=new Handler(){
@@ -113,7 +121,9 @@ public class LoginActivity extends Activity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
+                        break;
+                    case 122:
+                        Toast.makeText(LoginActivity.this, "Error：服务器连接异常！", Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -219,6 +229,9 @@ public class LoginActivity extends Activity {
                     }
                 }catch (IOException e){
                     Log.d("LoginActivitydddddd", "Faiddl ");
+                    Message message=handler.obtainMessage();
+                    message.what=122;
+                    handler.sendMessage(message);
                     e.printStackTrace();
                 }
             }
@@ -230,5 +243,19 @@ public class LoginActivity extends Activity {
         return gson.fromJson(jsonData,LoginResult.class);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case 233:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
+                } else {
+                    Toast.makeText(this, "拒绝存储权限将无法使用远程医疗", Toast.LENGTH_SHORT).show();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }

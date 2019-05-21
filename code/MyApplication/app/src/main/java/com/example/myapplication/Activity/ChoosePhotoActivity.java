@@ -17,12 +17,25 @@ import com.example.myapplication.Adapter.GridViewAdapter;
 import com.example.myapplication.R;
 import com.example.myapplication.Utils.Constant;
 import com.example.myapplication.Utils.GlideLoader;
+import com.example.myapplication.Utils.UploadFile;
 import com.example.myapplication.View.BottomLayout;
 import com.example.myapplication.View.TitleLayout;
 import com.lcw.library.imagepicker.ImagePicker;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class ChoosePhotoActivity extends AppCompatActivity {
     private static final int REQUEST_SELECT_IMAGES_CODE = 0x01;
@@ -33,7 +46,9 @@ public class ChoosePhotoActivity extends AppCompatActivity {
     private ArrayList<String> mPicList = new ArrayList<>();
     private TitleLayout titleLayout;
     private BottomLayout bottomLayout;
-
+    private int num;
+    private int diseaseId;
+    private List<String> list=new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +58,11 @@ public class ChoosePhotoActivity extends AppCompatActivity {
         if(actionBar != null){
             actionBar.hide();
         }
-        final int type=getIntent().getIntExtra("type",2);
+        Intent intent=getIntent();
+        final int type=intent.getIntExtra("type",2);
+        num=intent.getIntExtra("num",0);
+        diseaseId=intent.getIntExtra("DiseaseId",0);
+
         titleLayout = findViewById(R.id.title);
         if (type==2){
             titleLayout.setTitle("远程医疗");
@@ -79,11 +98,12 @@ public class ChoosePhotoActivity extends AppCompatActivity {
         gridView=findViewById(R.id.gridView);
         initGridView();
 
-        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/video_"+1+".amr";
+        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/video_"+1+".mp3";
         Log.d("dsdsddsdsd", "onCreate: "+path);
         findViewById(R.id.dsd).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                uploadFiles();
                 for (int i=0;i<mPicList.size();i++){
                     Log.d("dsdsddsdsd", "onClick: "+mPicList.get(i));
                 }
@@ -134,6 +154,40 @@ public class ChoosePhotoActivity extends AppCompatActivity {
         intent.putStringArrayListExtra(Constant.IMG_LIST, mPicList);
         intent.putExtra(Constant.POSITION, position);
         startActivityForResult(intent, Constant.REQUEST_CODE_MAIN);
+    }
+
+    public void uploadFiles(){
+        Map<String, RequestBody> files = new HashMap<>();
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl("")
+                .build();
+        UploadFile service=retrofit.create(UploadFile.class);
+        files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
+        String token=LoginActivity.sp.getString("access_token","");
+        files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
+        for (int i=0;i<num;i++){
+            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
+            list.add(path);
+            File file=new File(path);
+            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
+        }
+        for (int j=0;j<mPicList.size();j++){
+            list.add(mPicList.get(j));
+            File file=new File(mPicList.get(j));
+            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
+        }
+        Call<ResponseBody> call=service.uploadMultipleFiles(files);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
     }
 
     private void selectPic(int num){

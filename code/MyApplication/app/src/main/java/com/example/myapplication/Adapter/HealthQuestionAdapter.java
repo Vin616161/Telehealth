@@ -60,7 +60,7 @@ public class HealthQuestionAdapter extends RecyclerView.Adapter<HealthQuestionAd
         String question=mQuestionList.get(position).getQuestion();
         int questionNo=mQuestionList.get(position).getQuestionNo();
         holder.question.setText(questionNo+"、"+question);
-        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/video_"+position+".amr";
+        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+position+".mp3";
         Log.d("hhhhhhhhhhdsds", "onBindViewHolder: "+path);
         File file=new File(path);
         file.delete();

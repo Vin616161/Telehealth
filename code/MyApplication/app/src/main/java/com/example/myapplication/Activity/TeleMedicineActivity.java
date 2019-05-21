@@ -83,6 +83,7 @@ public class TeleMedicineActivity extends AppCompatActivity {
                             String body=response.body().string();
                             JSONObject jsonObject=new JSONObject(body);
                             JSONArray array=jsonObject.getJSONArray("diseaseList");
+                            Log.d("dsadsadsaasd", "id ");
                             for(int i=0;i<array.length();i++){
                                 JSONObject object=array.getJSONObject(i);
                                 Log.d("dsadsadsaasd", "id "+object.getInt("id")+"name "+object.getString("name"));

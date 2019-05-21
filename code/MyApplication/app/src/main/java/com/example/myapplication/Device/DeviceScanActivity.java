@@ -49,6 +49,8 @@ import com.example.myapplication.Activity.LoginActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.View.TitleLayout;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -367,7 +369,7 @@ public class DeviceScanActivity extends AppCompatActivity{
                 .add("blood_oxygen",xueyang)
                 .add("heart_rate",xinlv)
                 .add("pi",p)
-                .add("res",res)
+                .add("resvalue",res)
                 .add("access_token", LoginActivity.sp.getString("token",""))
                 .build();
         Request request=new Request.Builder()
@@ -381,10 +383,27 @@ public class DeviceScanActivity extends AppCompatActivity{
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, final Response response) throws IOException {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        try {
+                            String body = response.body().toString();
+                            JSONObject jsonObject = new JSONObject(body);
+                            if(response.isSuccessful()) {
+                                int code = jsonObject.getInt("code");
+                                String message = jsonObject.getString("message");
+                                if (code==200){
+                                    Toast.makeText(DeviceScanActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Toast.makeText(DeviceScanActivity.this, message, Toast.LENGTH_SHORT).show();
+                                }
+                            } else{
+
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
 
                     }
                 });
@@ -411,10 +430,28 @@ public class DeviceScanActivity extends AppCompatActivity{
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Call call, final Response response) throws IOException {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        try {
+                            String body = response.body().toString();
+                            JSONObject jsonObject = new JSONObject(body);
+                            if(response.isSuccessful()) {
+                                int code = jsonObject.getInt("code");
+                                String message = jsonObject.getString("message");
+                                if (code==200){
+                                    Toast.makeText(DeviceScanActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                                }else{
+                                    Toast.makeText(DeviceScanActivity.this, message, Toast.LENGTH_SHORT).show();
+                                }
+
+                            }else{
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
 
                     }
                 });

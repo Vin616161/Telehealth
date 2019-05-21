@@ -47,6 +47,7 @@ public class HealthQuestionActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private OkHttpClient client=new OkHttpClient();
     private List<Question> questionList=new ArrayList<>();
+    private int num=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +59,7 @@ public class HealthQuestionActivity extends AppCompatActivity {
         }
         Intent intent=getIntent();
         final int type=intent.getIntExtra("type",2);
-        Disease disease=(Disease)intent.getSerializableExtra("disease");
+        final Disease disease=(Disease)intent.getSerializableExtra("disease");
 
         titleLayout = findViewById(R.id.title);
         if (type==2){
@@ -77,6 +78,9 @@ public class HealthQuestionActivity extends AppCompatActivity {
             public void onMenuNextClick() {
                 Intent intent=new Intent(HealthQuestionActivity.this,ChoosePhotoActivity.class);
                 intent.putExtra("type",type);
+                intent.putExtra("num",num);
+                intent.putExtra("DiseaseId",disease.getId());
+                Log.d("dsadsafdsfdsfsd", "onMenuNextClick: "+num);
                 startActivity(intent);
             }
         });
@@ -117,6 +121,7 @@ public class HealthQuestionActivity extends AppCompatActivity {
                                 Log.d("dsadsafdsgfd", "onResponse: ");
                                 JSONArray array = jsonObject.getJSONArray("QAList");
                                 for (int i=0;i<array.length();i++){
+                                    num++;
                                     JSONObject object=array.getJSONObject(i);
                                     Question question=new Question(object.getInt("id"),object.getInt("questionNo"),object.getString("question"),object.getInt("departmentId"));
                                     questionList.add(question);

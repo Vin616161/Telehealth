@@ -21,12 +21,16 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
     static class ViewHolder extends RecyclerView.ViewHolder{
         TextView reportItem;
         TextView reportvalue;
+        TextView time;
+        TextView line;
         Button button;
         public ViewHolder(View view){
             super(view);
             reportItem=(TextView)view.findViewById(R.id.item);
             reportvalue=(TextView)view.findViewById(R.id.value);
+            time=view.findViewById(R.id.time);
             button=(Button)view.findViewById(R.id.history_button);
+            line=view.findViewById(R.id.line);
         }
     }
     public ReportAdapter(List<Report> reportList){
@@ -54,6 +58,10 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
         Report report=mReportList.get(position);
         holder.reportItem.setText(report.getName());
         holder.reportvalue.setText(report.getValue());
+        holder.time.setText(report.getTime());
+        if(position==mReportList.size()-1){
+            holder.line.setVisibility(View.GONE);
+        }
     }
     @Override
     public int getItemCount() {

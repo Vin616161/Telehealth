@@ -124,6 +124,9 @@ public class RegisterActivity extends Activity implements OnClickListener {
                         }catch (Exception e){
                             e.printStackTrace();
                         }
+                        break;
+                    case 125:
+                        Toast.makeText(RegisterActivity.this, "Error:服务器连接异常！", Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -186,6 +189,9 @@ public class RegisterActivity extends Activity implements OnClickListener {
                         }
 
                     }catch (Exception e){
+                        Message message=handler.obtainMessage();
+                        message.what=125;
+                        handler.sendMessage(message);
                         e.printStackTrace();
                     }
                 }
