@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>远程预约</title>
+    <link rel="icon" href="../assets/images/favicon2.ico"/>
+    <link rel="stylesheet" href="../assets/libs/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../assets/common.css" media="all">
+</head>
+
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body layui-form">
+            <!--原为同步按钮-->
+            <!--<button id="authBtnSync" class="layui-btn icon-btn"><i class="layui-icon">&#xe669;</i>修改</button>-->
+
+            <!-- 数据表格 -->
+            <table class="layui-table" id="authTable" lay-filter="authTable"></table>
+            <script type="text/html" id="id">
+                {{d.LAY_TABLE_INDEX+1}}
+            </script>
+            <script type="text/html" id="barDemo">
+                <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+            </script>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../assets/libs/layui/layui.js"></script>
+<script type="text/javascript" src="../assets/common.js"></script>
+<script>
+    layui.use(['jquery', 'form', 'table', 'util', 'admin'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var table = layui.table;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var patId = 0;
+        // 渲染表格
+        table.render({
+            elem: '#authTable',
+            // type: 'post',
+            url: base_server + 'doctor/queryAppoint',
+            where: {
+                access_token: admin.getToken(),
+                type : 1
+            },
+            page: true, //开启分页
+            cellMinWidth: 100,
+            limit: 10,
+            cols: [[  //表头
+                // {type: 'numbers'},
+                {title: '序号',templet:'#id',type:'numbers'},
+                {field: 'patId', sort: false, title: '患者id'},
+                {field: 'name', sort: false, title: '姓名'},
+                {field: 'sex', sort: false, title: '性别'},
+                {field: 'age', sort: false, title: '年龄'},
+                {field: 'apmtTime', sort: true, title: '预约时间'},
+                {fixed: 'right', width:180, align:'center', toolbar: '#barDemo',title: '操作'}
+            ]],
+            skin: 'line',
+            size: 'lg'
+        });
+
+
+        ///监听工具条
+        table.on('tool(authTable)', function(obj){
+            if(obj.event === 'detail'){
+                // layer.msg('ID：'+ data.id + ' 的查看操作');
+                window.location.href="../pages/patientInfo.html?id="+obj.data.patId;
+            }
+        });
+
+        // 同步按钮点击事件
+        $('#authBtnSync').click(function () {
+            layer.confirm('确定进行同步吗？<br><span style="color: red;">（自动扫描所有接口生成权限标识）</span>', function () {
+                layer.load(2);
+                $.get('/v2/api-docs', function (data) {
+                    admin.req('authorities/sync', {
+                        json: JSON.stringify(data)
+                    }, function (res) {
+                        layer.closeAll('loading');
+                        if (200 == res.code) {
+                            layer.msg(res.msg, {icon: 1});
+                            table.reload('authTable');
+                        } else {
+                            layer.msg(res.msg, {icon: 2});
+                        }
+                    }, 'POST');
+                });
+            });
+        });
+
+    });
+</script>
+
+</body>
+</html>
