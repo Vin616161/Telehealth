@@ -11,8 +11,10 @@ import retrofit2.http.PartMap;
 
 public interface UploadFile {
     @Multipart
-    @POST("/upload")
+    @POST("upload")
     Call<ResponseBody> uploadMultipleFiles(
             @PartMap Map<String,RequestBody> files);
+
+
 
 }

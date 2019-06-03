@@ -23,6 +23,10 @@
             android:icon="@drawable/nav_mail"
             android:title="我的文件" />
         <item
+            android:id="@+id/nav_yuyue"
+            android:icon="@drawable/menu_kefu"
+            android:title="我的预约" />
+        <item
             android:id="@+id/nav_task"
             android:icon="@drawable/menu_about"
             android:title="常见问题" />

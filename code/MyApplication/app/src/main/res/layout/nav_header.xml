@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/back_iv"
     android:layout_width="match_parent"
     android:layout_height="180dp"
     android:background="@color/colorPrimay"
@@ -7,27 +8,59 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/icon_image"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_centerInParent="true"
         android:src="@drawable/nav_icon" />
-
-    <TextView
-        android:id="@+id/username"
+    <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="Tony Green"
-        android:textColor="#FFF"
-        android:textSize="14sp" />
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="5dp"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ID: "
+                android:textColor="#FFF"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:textSize="14sp"
+                android:textColor="#FFF"/>
 
-    <TextView
-        android:id="@+id/mail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/username"
-        android:text="tonygreendev@gmail.com"
-        android:textColor="#FFF"
-        android:textSize="14sp" />
+        </LinearLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="姓名: "
+                android:textColor="#FFF"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="张三"
+                android:textColor="#FFF"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
 </RelativeLayout>

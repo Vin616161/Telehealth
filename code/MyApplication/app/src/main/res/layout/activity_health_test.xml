@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".Activity.HealthTestActivity">
     <com.example.myapplication.View.TitleLayout
         android:id="@+id/title"
@@ -13,63 +14,37 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_below="@id/title">
-
-        <LinearLayout
-            android:id="@+id/linearlayout2"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <android.support.v7.widget.CardView
+            android:id="@+id/scan"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginRight="25dp"
-            android:layout_marginTop="180dp"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/scan_detectionButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="#00000000"
-                android:src="@drawable/main_jiankangkepu" />
-
-            <ImageButton
-                android:id="@+id/view_reportButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="#00000000"
-                android:src="@drawable/main_jiankangkepu" />
-
-        </LinearLayout>
-
-        <LinearLayout
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:elevation="5dp"
+            app:cardCornerRadius="4dp">
+           <ImageView
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:background="@drawable/scan"/>
+        </android.support.v7.widget.CardView>
+        <android.support.v7.widget.CardView
+            android:id="@+id/history"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/linearlayout2"
-            android:layout_marginLeft="25dp"
-            android:layout_marginRight="25dp"
-            android:orientation="horizontal">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_margin="20dp"
+            android:elevation="5dp"
+            app:cardCornerRadius="4dp">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/history"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/scan_detection"
-                android:textSize="20sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/view_report"
-                android:textSize="20sp" />
-        </LinearLayout>
+        </android.support.v7.widget.CardView>
     </LinearLayout>
-
 
     <com.example.myapplication.View.BottomLayout
         android:layout_width="match_parent"
@@ -78,4 +53,4 @@
         android:layout_alignParentBottom="true">
     </com.example.myapplication.View.BottomLayout>
 
-</RelativeLayout>
+</LinearLayout>

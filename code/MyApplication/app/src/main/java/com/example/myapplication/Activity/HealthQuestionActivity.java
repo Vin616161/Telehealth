@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,23 +23,30 @@ import com.example.myapplication.Bean.Disease;
 import com.example.myapplication.Bean.Question;
 import com.example.myapplication.R;
 import com.example.myapplication.Utils.Constant;
+import com.example.myapplication.Utils.UploadFile;
 import com.example.myapplication.View.BottomLayout;
 import com.example.myapplication.View.TitleLayout;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import retrofit2.Retrofit;
 
 public class HealthQuestionActivity extends AppCompatActivity {
     private TitleLayout titleLayout;
@@ -48,6 +56,7 @@ public class HealthQuestionActivity extends AppCompatActivity {
     private OkHttpClient client=new OkHttpClient();
     private List<Question> questionList=new ArrayList<>();
     private int num=0;
+    private List<String> list=new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +85,7 @@ public class HealthQuestionActivity extends AppCompatActivity {
         titleLayout.setOnNextClickListener(new TitleLayout.OnNextClickListener() {
             @Override
             public void onMenuNextClick() {
+                //uploadFile();
                 Intent intent=new Intent(HealthQuestionActivity.this,ChoosePhotoActivity.class);
                 intent.putExtra("type",type);
                 intent.putExtra("num",num);
@@ -115,8 +125,11 @@ public class HealthQuestionActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
+                            Log.d("dsadsafdsgfd", "onResponse:code "+response.code());
                             String body=response.body().string();
+                            Log.d("dsadsafdsgfd", "onResponse: body"+body);
                             JSONObject jsonObject = new JSONObject(body);
+                            Log.d("dsadsafdsgfd", "onResponse:jsonobject "+jsonObject);
                             if (response.isSuccessful()) {
                                 Log.d("dsadsafdsgfd", "onResponse: ");
                                 JSONArray array = jsonObject.getJSONArray("QAList");
@@ -125,19 +138,20 @@ public class HealthQuestionActivity extends AppCompatActivity {
                                     JSONObject object=array.getJSONObject(i);
                                     Question question=new Question(object.getInt("id"),object.getInt("questionNo"),object.getString("question"),object.getInt("departmentId"));
                                     questionList.add(question);
-                                    LinearLayoutManager linearLayoutManager=new LinearLayoutManager(HealthQuestionActivity.this);
-                                    recyclerView.setLayoutManager(linearLayoutManager);
-                                    HealthQuestionAdapter adapter=new HealthQuestionAdapter(questionList,HealthQuestionActivity.this);
-                                    recyclerView.setAdapter(adapter);
                                     Log.d("dsadsafdsgfd", "id "+object.getInt("id"));
                                     Log.d("dsadsafdsgfd", "questionNo "+object.getInt("questionNo"));
                                     Log.d("dsadsafdsgfd", "question"+object.getString("question"));
                                     Log.d("dsadsafdsgfd", "departmentId"+object.getInt("departmentId"));
                                 }
+                                LinearLayoutManager linearLayoutManager=new LinearLayoutManager(HealthQuestionActivity.this);
+                                recyclerView.setLayoutManager(linearLayoutManager);
+                                HealthQuestionAdapter adapter=new HealthQuestionAdapter(questionList,HealthQuestionActivity.this);
+                                recyclerView.setAdapter(adapter);
                             }else{
                                 Toast.makeText(HealthQuestionActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
                             }
                         } catch (Exception e) {
+                            Log.d("dsadsafdsgfd", "run: "+e.toString());
                             e.printStackTrace();
                         }
 
@@ -147,6 +161,67 @@ public class HealthQuestionActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    public void uploadFile(){
+        Map<String, RequestBody> files = new HashMap<>();
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl(Constant.UPLOAD_URL)
+                .build();
+        UploadFile service=retrofit.create(UploadFile.class);
+        //files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
+        String token=LoginActivity.sp.getString("access_token","");
+        files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
+        String path= Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
+        list.add(path);
+        File file=new File(path);
+        files.put("file",RequestBody.create(MediaType.parse("audio/*"),file));
+//        for (int i=0;i<num;i++){
+//            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
+//            list.add(path);
+//            File file=new File(path);
+//            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
+//        }
+//        for (int j=0;j<mPicList.size();j++){
+//            list.add(mPicList.get(j));
+//            File file=new File(mPicList.get(j));
+//            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
+//        }
+        retrofit2.Call<ResponseBody> call=service.uploadMultipleFiles(files);
+        call.enqueue(new retrofit2.Callback<ResponseBody>() {
+            @Override
+            public void onResponse(retrofit2.Call<ResponseBody> call, final retrofit2.Response<ResponseBody> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            if (response.isSuccessful()) {
+                                String body = response.body().string();
+                                JSONObject object = new JSONObject(body);
+                                int id = object.getInt("fileId");
+                                Log.d("ghgfhgfhgfhf", "run: "+id);
+                            }
+
+                        }catch (Exception e){
+                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+            }
+            @Override
+            public void onFailure(retrofit2.Call<ResponseBody> call, Throwable t) {
+                Log.d("ghgfhgfhgfhf", "onFailure: ");
+
+            }
+        });
+    }
+
+
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
          switch (requestCode){

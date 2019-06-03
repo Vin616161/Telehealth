@@ -36,7 +36,7 @@ public class OnlinePayActivity extends AppCompatActivity implements AdapterView.
             actionBar.hide();
         }
         titleLayout = findViewById(R.id.title);
-        titleLayout.setTitle("线下预约");
+        titleLayout.setTitle("远程医疗");
         titleLayout.setNextGone();
         titleLayout.setOnBackClickListener(new TitleLayout.OnBackClickListener() {
             @Override

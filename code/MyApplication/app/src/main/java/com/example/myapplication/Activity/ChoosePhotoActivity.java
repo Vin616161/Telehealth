@@ -8,12 +8,15 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.example.myapplication.Adapter.DiseaseAdapter;
 import com.example.myapplication.Adapter.GridViewAdapter;
+import com.example.myapplication.Bean.Disease;
 import com.example.myapplication.R;
 import com.example.myapplication.Utils.Constant;
 import com.example.myapplication.Utils.GlideLoader;
@@ -21,6 +24,9 @@ import com.example.myapplication.Utils.UploadFile;
 import com.example.myapplication.View.BottomLayout;
 import com.example.myapplication.View.TitleLayout;
 import com.lcw.library.imagepicker.ImagePicker;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,8 +86,9 @@ public class ChoosePhotoActivity extends AppCompatActivity {
             public void onMenuNextClick() {
                 switch (type){
                     case 2:
-                        Intent intent=new Intent(ChoosePhotoActivity.this,TeleReservationActivity.class);
-                        startActivity(intent);
+                        uploadFiles();
+                        //Intent intent=new Intent(ChoosePhotoActivity.this,TeleReservationActivity.class);
+                        //startActivity(intent);
                         break;
                     case 3:
                         Intent intent2=new Intent(ChoosePhotoActivity.this,OfflineReservationActivity.class);
@@ -98,32 +105,32 @@ public class ChoosePhotoActivity extends AppCompatActivity {
         gridView=findViewById(R.id.gridView);
         initGridView();
 
-        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/video_"+1+".mp3";
-        Log.d("dsdsddsdsd", "onCreate: "+path);
-        findViewById(R.id.dsd).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                uploadFiles();
-                for (int i=0;i<mPicList.size();i++){
-                    Log.d("dsdsddsdsd", "onClick: "+mPicList.get(i));
-                }
-                MediaPlayer player=new MediaPlayer();
-                if(player!=null){
-                    player.reset();
-                }else {
-                    player=new MediaPlayer();
-                }
-                try {
-                    player.setDataSource(path);
-                    //初始化
-                    player.prepare();
-                    //开始播放
-                    player.start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        final String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/video_"+1+".mp3";
+//        Log.d("dsdsddsdsd", "onCreate: "+path);
+//        findViewById(R.id.dsd).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                uploadFiles();
+//                for (int i=0;i<mPicList.size();i++){
+//                    Log.d("dsdsddsdsd", "onClick: "+mPicList.get(i));
+//                }
+//                MediaPlayer player=new MediaPlayer();
+//                if(player!=null){
+//                    player.reset();
+//                }else {
+//                    player=new MediaPlayer();
+//                }
+//                try {
+//                    player.setDataSource(path);
+//                    //初始化
+//                    player.prepare();
+//                    //开始播放
+//                    player.start();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     private void initGridView() {
@@ -159,36 +166,79 @@ public class ChoosePhotoActivity extends AppCompatActivity {
     public void uploadFiles(){
         Map<String, RequestBody> files = new HashMap<>();
         Retrofit retrofit=new Retrofit.Builder()
-                .baseUrl("")
+                .baseUrl(Constant.UPLOAD_URL)
                 .build();
         UploadFile service=retrofit.create(UploadFile.class);
-        files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
+        //files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
         String token=LoginActivity.sp.getString("access_token","");
         files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
-        for (int i=0;i<num;i++){
-            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
-            list.add(path);
-            File file=new File(path);
-            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
-        }
-        for (int j=0;j<mPicList.size();j++){
-            list.add(mPicList.get(j));
-            File file=new File(mPicList.get(j));
-            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
-        }
+        String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
+        list.add(path);
+        File file=new File(path);
+        files.put("file",RequestBody.create(MediaType.parse("audio/*"),file));
+//        for (int i=0;i<num;i++){
+//            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
+//            list.add(path);
+//            File file=new File(path);
+//            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
+//        }
+//        for (int j=0;j<mPicList.size();j++){
+//            list.add(mPicList.get(j));
+//            File file=new File(mPicList.get(j));
+//            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
+//        }
         Call<ResponseBody> call=service.uploadMultipleFiles(files);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            if (response.isSuccessful()) {
+                                String body = response.body().string();
+                                JSONObject object = new JSONObject(body);
+                                int id = object.getInt("fileId");
+                                Log.d("ghgfhgfhgfhf", "run: "+id);
+                            }
 
+                        }catch (Exception e){
+                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
 
             }
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("ghgfhgfhgfhf", "onFailure: ");
 
             }
         });
     }
+
+
+
+//    public static MultipartBody filesToMultipartBody(List<File> files) {
+//        MultipartBody.Builder builder = new MultipartBody.Builder();
+//
+//        for (File file : files) {
+//            // TODO: 16-4-2  这里为了简单起见，没有判断file的类型
+//            RequestBody requestBody = RequestBody.create(MediaType.parse("image/png"), file);
+//            builder.addFormDataPart("file", file.getName(), requestBody);
+//        }
+//
+//        builder.setType(MultipartBody.FORM);
+//        MultipartBody multipartBody = builder.build();
+//        return multipartBody;
+//    }
+
+
+
+
+
 
     private void selectPic(int num){
         ImagePicker.getInstance()

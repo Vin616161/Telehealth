@@ -5,6 +5,7 @@ public class Report{
     private String name;
     private String value;
     private String time;
+    public Report(){}
 
     public Report(String name, String value,String time) {
         this.name = name;

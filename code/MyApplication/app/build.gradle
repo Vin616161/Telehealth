@@ -37,7 +37,7 @@ dependencies {
     implementation 'com.lcw.library:imagepicker:2.1.1'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
-    implementation (name:'bluetoothlibrary-release',ext:'aar')
+    implementation(name: 'bluetoothlibrary-release', ext: 'aar')
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

@@ -47,6 +47,7 @@ import com.example.bluetoothlibrary.entity.SycnBp;
 import com.example.myapplication.Activity.HealthTestActivity;
 import com.example.myapplication.Activity.LoginActivity;
 import com.example.myapplication.R;
+import com.example.myapplication.Utils.DateFormatUtils;
 import com.example.myapplication.View.TitleLayout;
 
 import org.json.JSONObject;
@@ -59,6 +60,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -123,7 +125,7 @@ public class DeviceScanActivity extends AppCompatActivity{
     public double temp;
     public int spo2_s, heart_rate_s,resvalue_s,wbp;
     public float pi_s;
-    private ImageView icon;
+    private CircleImageView icon;
     private TextView name;
     private LinearLayout layout1,layout2,layout3,layout4;
     private LinearLayout layout5,layout6,layout7,layout8,layout9;
@@ -140,6 +142,7 @@ public class DeviceScanActivity extends AppCompatActivity{
     private int type=0;
     public int i = 0;
     public int j=2;
+    private int vis=1;
     public boolean openble=true;
     ResolveM70c resolveM70c=new ResolveM70c();
     ResolveWbp resolveWbp=new ResolveWbp();
@@ -230,6 +233,7 @@ public class DeviceScanActivity extends AppCompatActivity{
                         start.setVisibility(View.VISIBLE);
                         fin.setVisibility(View.VISIBLE);
                         frameLayout.setVisibility(View.VISIBLE);
+                        icon.setImageResource(R.drawable.xueyang);
                         name.setText("血氧仪");
                         type=1;
                     }else if(device.getModel().equals("WBP202")){
@@ -239,6 +243,7 @@ public class DeviceScanActivity extends AppCompatActivity{
                         temp_layout.setVisibility(View.VISIBLE);
                         help.setVisibility(View.VISIBLE);
                         name.setText("血压仪");
+                        icon.setImageResource(R.drawable.xueya);
                         type=0;
                     }
                     Log.e(" the current device", "" + config.getConnectPreipheralOpsition().getPreipheralMAC() + "" + config.getConnectPreipheralOpsition().getBluetooth());
@@ -261,7 +266,8 @@ public class DeviceScanActivity extends AppCompatActivity{
                     Log.d("dsadsadasda", "xinlu :"+xinlu);
                     Log.d("dsadsadasda", "p :"+p);
                     Log.d("dsadsadasda", "res :"+res);
-                    sendRequestM70C(tt,Oxy,xinlu,p,res);
+                    long time=DateFormatUtils.str2Long(tt,true);
+                    sendRequestM70C(time,Oxy,xinlu,p,res);
 
                 }else{
                     String ttt=testtime.getText().toString();
@@ -269,7 +275,8 @@ public class DeviceScanActivity extends AppCompatActivity{
                     String sy=sys.getText().toString();
                     String di=dia.getText().toString();
                     String hh=hr.getText().toString();
-                    sendRequestWBP(ttt,bp,sy,di,hh);
+                    long time=DateFormatUtils.str2Long(ttt,true);
+                    sendRequestWBP(time,bp,sy,di,hh);
                     Log.d("dsadsadasda", "ttt :"+ttt);
                     Log.d("dsadsadasda", "bp :"+bp);
                     Log.d("dsadsadasda", "sy :"+sy);
@@ -363,9 +370,9 @@ public class DeviceScanActivity extends AppCompatActivity{
         initHandler();
     }
 
-    private void sendRequestM70C(String time,String xueyang,String xinlv,String p,String res){
+    private void sendRequestM70C(long time,String xueyang,String xinlv,String p,String res){
         RequestBody requestBody=new FormBody.Builder()
-                .add("recordTime",time)
+                .add("recordTime",String.valueOf(time))
                 .add("blood_oxygen",xueyang)
                 .add("heart_rate",xinlv)
                 .add("pi",p)
@@ -380,6 +387,7 @@ public class DeviceScanActivity extends AppCompatActivity{
             @Override
             public void onFailure(Call call, IOException e) {
 
+                Toast.makeText(DeviceScanActivity.this, "连接服务器异常！", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -388,11 +396,11 @@ public class DeviceScanActivity extends AppCompatActivity{
                     @Override
                     public void run() {
                         try {
-                            String body = response.body().toString();
+                            String body = response.body().string();
                             JSONObject jsonObject = new JSONObject(body);
                             if(response.isSuccessful()) {
                                 int code = jsonObject.getInt("code");
-                                String message = jsonObject.getString("message");
+                                String message = jsonObject.getString("msg");
                                 if (code==200){
                                     Toast.makeText(DeviceScanActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
                                 }else{
@@ -402,6 +410,7 @@ public class DeviceScanActivity extends AppCompatActivity{
 
                             }
                         }catch (Exception e){
+                            Toast.makeText(DeviceScanActivity.this, "上传成功！", Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
 
@@ -410,9 +419,9 @@ public class DeviceScanActivity extends AppCompatActivity{
             }
         });
     }
-    private void sendRequestWBP(String time,String xiudaiya,String shousuoya,String shuzhangya,String xinlv){
+    private void sendRequestWBP(long time,String xiudaiya,String shousuoya,String shuzhangya,String xinlv){
         RequestBody requestBody=new FormBody.Builder()
-                .add("time",time)
+                .add("recordTime",String.valueOf(time))
                 .add("cuff_pressure",xiudaiya)
                 .add("sys_pressure",shousuoya)
                 .add("dia_pressure",shuzhangya)
@@ -426,6 +435,7 @@ public class DeviceScanActivity extends AppCompatActivity{
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                Toast.makeText(DeviceScanActivity.this, "连接服务器异常！", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -434,26 +444,33 @@ public class DeviceScanActivity extends AppCompatActivity{
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            String body = response.body().toString();
-                            JSONObject jsonObject = new JSONObject(body);
+
                             if(response.isSuccessful()) {
-                                int code = jsonObject.getInt("code");
-                                String message = jsonObject.getString("message");
-                                if (code==200){
-                                    Toast.makeText(DeviceScanActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
-                                }else{
-                                    Toast.makeText(DeviceScanActivity.this, message, Toast.LENGTH_SHORT).show();
+                                try {
+                                    String body = response.body().string();
+                                    Log.d("gfgfgfgf", "body: "+body);
+                                    JSONObject jsonObject = new JSONObject(body);
+                                    Log.d("gfgfgfgf", "json: "+jsonObject);
+                                    int code = jsonObject.getInt("code");
+                                    Log.d("gfgfgfgf", "code: "+code);
+                                    String msg = jsonObject.getString("msg");
+                                    Log.d("gfgfgfgf", "message: "+msg);
+
+                                    if (code == 200) {
+                                        Toast.makeText(DeviceScanActivity.this, "上传成功", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(DeviceScanActivity.this, msg, Toast.LENGTH_SHORT).show();
+                                    }
+                                }catch (Exception e){
+                                    Log.d("gfgfgfgf", "code:error");
+                                    Toast.makeText(DeviceScanActivity.this, "上传成功！", Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
                                 }
 
                             }else{
+                                Toast.makeText(DeviceScanActivity.this, "服务器请求失败！", Toast.LENGTH_SHORT).show();
                             }
-                        }catch (Exception e){
-                            e.printStackTrace();
                         }
-
-
-                    }
                 });
 
             }
@@ -563,7 +580,10 @@ public class DeviceScanActivity extends AppCompatActivity{
                         fin_wbp.setVisibility(View.VISIBLE);
                         start_wbp.setVisibility(View.VISIBLE);
                         submit.setVisibility(View.VISIBLE);
-                        Toast.makeText(DeviceScanActivity.this, "连接成功！", Toast.LENGTH_SHORT).show();
+                        if (vis==1) {
+                            Toast.makeText(DeviceScanActivity.this, "连接成功！", Toast.LENGTH_SHORT).show();
+                            vis=0;
+                        }
                         break;
                     case MACRO_CODE_15://error
                         listView.setVisibility(View.GONE);

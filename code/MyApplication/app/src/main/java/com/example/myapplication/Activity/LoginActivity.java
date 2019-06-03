@@ -87,46 +87,47 @@ public class LoginActivity extends Activity {
         }
 
 
-        handler=new Handler(){
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what){
-                    case 123:
-                        try {
-                            LoginResult mResult = (LoginResult) msg.obj;
-                            int code = mResult.getCode();
-                            String message = mResult.getMsg();
-                            String token=mResult.getAccess_token();
-                            if (code == 200) {
-                                SharedPreferences.Editor editor = sp.edit();
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-                                if (rem_pw.isChecked()) {
-                                    //记住用户名、密码
-                                    editor.putBoolean("ISCHECK",true);
-                                    editor.putString("USER_NAME", userNameValue);
-                                    editor.putString("PASSWORD", passwordValue);
-                                }else {
-                                    editor.clear();
-                                }
-                                editor.putString("token",token);
-                                editor.apply();
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("token",token);
-                                startActivity(intent);
-                                finish();
-                            } else {
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case 122:
-                        Toast.makeText(LoginActivity.this, "Error：服务器连接异常！", Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
+//        handler=new Handler(){
+//            @Override
+//            public void handleMessage(Message msg) {
+//                super.handleMessage(msg);
+//                switch (msg.what){
+//                    case 123:
+//                        try {
+//                            LoginResult mResult = (LoginResult) msg.obj;
+//                            int code = mResult.getCode();
+//                            String message = mResult.getMsg();
+//                            String token=mResult.getAccess_token();
+//                            if (code == 200) {
+//                                SharedPreferences.Editor editor = sp.edit();
+//                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+//                                if (rem_pw.isChecked()) {
+//                                    //记住用户名、密码
+//                                    editor.putBoolean("ISCHECK",true);
+//                                    editor.putString("USER_NAME", userNameValue);
+//                                    editor.putString("PASSWORD", passwordValue);
+//                                }else {
+//                                    editor.clear();
+//                                }
+//                                editor.putString("token",token);
+//                                editor.apply();
+//                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+//                                intent.putExtra("token",token);
+//                                startActivity(intent);
+//                                finish();
+//                            } else {
+//                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+//                            }
+//                        } catch (Exception e) {
+//                            Toast.makeText(LoginActivity.this, "Error：服务器连接异常！", Toast.LENGTH_SHORT).show();
+//                            e.printStackTrace();
+//                        }
+//                        break;
+//                    case 122:
+//                        Toast.makeText(LoginActivity.this, "Error：服务器连接异常！", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        };
 
         //判断记住密码多选框的状态
         if(sp.getBoolean("ISCHECK", false))
@@ -210,32 +211,90 @@ public class LoginActivity extends Activity {
                 .url(Constant.LOGIN_URL)
                 .post(requestBody)
                 .build();
-        new Thread(new Runnable() {
+        client.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                Response response=null;
-                try{
-                    response=client.newCall(request).execute();
-                    if (response.isSuccessful()){
-                        String responseBody=response.body().string();
-                        Log.d("LoginActivitydddddd", "run: "+responseBody);
-                        result=parseJSONWithGson(responseBody);
-                        Message message=handler.obtainMessage();
-                        message.what=123;
-                        message.obj=result;
-                        handler.sendMessage(message);
-                    }else{
-                        Log.d("LoginActivitydddddd", "Fail ");
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(LoginActivity.this, "Error,服务器连接异常！", Toast.LENGTH_SHORT).show();
                     }
-                }catch (IOException e){
-                    Log.d("LoginActivitydddddd", "Faiddl ");
-                    Message message=handler.obtainMessage();
-                    message.what=122;
-                    handler.sendMessage(message);
-                    e.printStackTrace();
-                }
+                });
+
             }
-        }).start();
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccessful()){
+                            try {
+                                String responseBody = response.body().string();
+                                Log.d("LoginActivitydddddd", "run: " + responseBody);
+                                result = parseJSONWithGson(responseBody);
+                                int code = result.getCode();
+                                String message = result.getMsg();
+                                String token=result.getAccess_token();
+                                if (code == 200) {
+                                    SharedPreferences.Editor editor = sp.edit();
+                                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+                                    if (rem_pw.isChecked()) {
+                                        //记住用户名、密码
+                                        editor.putBoolean("ISCHECK",true);
+                                        editor.putString("USER_NAME", userNameValue);
+                                        editor.putString("PASSWORD", passwordValue);
+                                    }else {
+                                        editor.clear();
+                                    }
+                                    editor.putString("token",token);
+                                    editor.apply();
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    intent.putExtra("token",token);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+                                }
+                            }catch (IOException e){
+                                Toast.makeText(LoginActivity.this, "服务器返回异常！", Toast.LENGTH_SHORT).show();
+                                e.printStackTrace();
+                            }
+                        }else {
+                            Toast.makeText(LoginActivity.this, "服务器处理异常！", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
+
+            }
+        });
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Response response=null;
+//                try{
+//                    response=client.newCall(request).execute();
+//                    if (response.isSuccessful()){
+//                        String responseBody=response.body().string();
+//                        Log.d("LoginActivitydddddd", "run: "+responseBody);
+//                        result=parseJSONWithGson(responseBody);
+//                        Message message=handler.obtainMessage();
+//                        message.what=123;
+//                        message.obj=result;
+//                        handler.sendMessage(message);
+//                    }else{
+//                        Log.d("LoginActivitydddddd", "Fail ");
+//                    }
+//                }catch (IOException e){
+//                    Log.d("LoginActivitydddddd", "Faiddl ");
+//                    Message message=handler.obtainMessage();
+//                    message.what=122;
+//                    handler.sendMessage(message);
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
     private LoginResult parseJSONWithGson(String jsonData){

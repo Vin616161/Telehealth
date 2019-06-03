@@ -13,14 +13,6 @@ import com.example.myapplication.R;
 import java.util.List;
 
 
-/**
- * 添加上传图片适配器
- * <p>
- * 作者： 周旭 on 2017/6/21/0021.
- * 邮箱：374952705@qq.com
- * 博客：http://www.jianshu.com/u/56db5d78044d
- */
-
 public class GridViewAdapter extends android.widget.BaseAdapter {
     
     private Context mContext;

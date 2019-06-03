@@ -11,13 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     </com.example.myapplication.View.TitleLayout>
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:textSize="20dp"
-        android:text="ccc"
-        android:gravity="center"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -32,6 +25,10 @@
             android:layout_below="@id/title">
 
         </android.support.v7.widget.RecyclerView>
+        <com.example.myapplication.View.LineView
+            android:id="@+id/lineView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp" />
 
         <com.example.myapplication.View.BottomLayout
             android:layout_width="match_parent"

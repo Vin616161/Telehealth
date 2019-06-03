@@ -13,6 +13,8 @@ import com.example.myapplication.R;
 
 import java.util.ArrayList;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class LeDeviceListAdapter extends BaseAdapter {
 
 	// Adapter for holding devices found through scanning.
@@ -81,10 +83,10 @@ public class LeDeviceListAdapter extends BaseAdapter {
 		final String model=device.getModel();
 		if(model.equals("WBP202")){
 			viewHolder.deviceName.setText("血压仪");
-			viewHolder.imageView.setImageResource(R.mipmap.ic_launcher);
+			viewHolder.imageView.setImageResource(R.drawable.xueya);
 		}else if(model.equals("M70C")){
 			viewHolder.deviceName.setText("血氧仪");
-			viewHolder.imageView.setImageResource(R.mipmap.ic_launcher);
+			viewHolder.imageView.setImageResource(R.drawable.xueyang);
 		}
 
 //		if (deviceName != null && deviceName.length() > 0)
@@ -100,7 +102,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
 
 	class ViewHolder {
 
-		ImageView imageView;
+		CircleImageView imageView;
 		TextView deviceName;
 //		TextView deviceName;
 //		TextView deviceAddress;
