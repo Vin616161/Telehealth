@@ -17,6 +17,7 @@ import android.widget.GridView;
 import com.example.myapplication.Adapter.DiseaseAdapter;
 import com.example.myapplication.Adapter.GridViewAdapter;
 import com.example.myapplication.Bean.Disease;
+import com.example.myapplication.Bean.FileEntity;
 import com.example.myapplication.R;
 import com.example.myapplication.Utils.Constant;
 import com.example.myapplication.Utils.GlideLoader;
@@ -35,7 +36,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.FormBody;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -86,7 +89,7 @@ public class ChoosePhotoActivity extends AppCompatActivity {
             public void onMenuNextClick() {
                 switch (type){
                     case 2:
-                        uploadFiles();
+                        upload1();
                         //Intent intent=new Intent(ChoosePhotoActivity.this,TeleReservationActivity.class);
                         //startActivity(intent);
                         break;
@@ -163,61 +166,57 @@ public class ChoosePhotoActivity extends AppCompatActivity {
         startActivityForResult(intent, Constant.REQUEST_CODE_MAIN);
     }
 
-    public void uploadFiles(){
-        Map<String, RequestBody> files = new HashMap<>();
-        Retrofit retrofit=new Retrofit.Builder()
-                .baseUrl(Constant.UPLOAD_URL)
-                .build();
-        UploadFile service=retrofit.create(UploadFile.class);
-        //files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
-        String token=LoginActivity.sp.getString("access_token","");
-        files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
-        String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
-        list.add(path);
-        File file=new File(path);
-        files.put("file",RequestBody.create(MediaType.parse("audio/*"),file));
+//    public void uploadFiles(){
+//        Map<String, RequestBody> files = new HashMap<>();
+//        Retrofit retrofit=new Retrofit.Builder()
+//                .baseUrl(Constant.UPLOAD_URL)
+//                .build();
+//        UploadFile service=retrofit.create(UploadFile.class);
+//        files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
+//        String token=LoginActivity.sp.getString("access_token","");
+//        files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
 //        for (int i=0;i<num;i++){
 //            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
 //            list.add(path);
 //            File file=new File(path);
-//            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
+//            files.put("file\"; filename=\""+ file.getName(),RequestBody.create(MediaType.parse("audio/*"),file));
 //        }
 //        for (int j=0;j<mPicList.size();j++){
 //            list.add(mPicList.get(j));
 //            File file=new File(mPicList.get(j));
-//            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
+//            files.put("file\"; filename=\""+ file.getName(),RequestBody.create(MediaType.parse("image/*"),file));
 //        }
-        Call<ResponseBody> call=service.uploadMultipleFiles(files);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            if (response.isSuccessful()) {
-                                String body = response.body().string();
-                                JSONObject object = new JSONObject(body);
-                                int id = object.getInt("fileId");
-                                Log.d("ghgfhgfhgfhf", "run: "+id);
-                            }
-
-                        }catch (Exception e){
-                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
-                            e.printStackTrace();
-                        }
-
-                    }
-                });
-
-            }
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.d("ghgfhgfhgfhf", "onFailure: ");
-
-            }
-        });
-    }
+//        Call<ResponseBody> call=service.uploadMultipleFiles(files);
+//        call.enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try{
+//                            if (response.isSuccessful()) {
+//                                String body = response.body().string();
+//                                JSONObject object = new JSONObject(body);
+//                                int id = object.getInt("fileId");
+//                                Log.d("ghgfhgfhgfhf", "run: "+id);
+//                            }
+//
+//                        }catch (Exception e){
+//                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
+//                            e.printStackTrace();
+//                        }
+//
+//                    }
+//                });
+//
+//            }
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                Log.d("ghgfhgfhgfhf", "onFailure: ");
+//
+//            }
+//        });
+//    }
 
 
 
@@ -234,7 +233,115 @@ public class ChoosePhotoActivity extends AppCompatActivity {
 //        MultipartBody multipartBody = builder.build();
 //        return multipartBody;
 //    }
+    public void upload1(){
+        Map<String, RequestBody> map = new HashMap<>();
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl(Constant.UPLOAD_URL)
+                .build();
+        UploadFile service=retrofit.create(UploadFile.class);
+        String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
+        File file=new File(path);
+        String token=LoginActivity.sp.getString("token","");
+        map.put("access_token",RequestBody.create(MediaType. parse("text/plain"),token));
+        map.put("fileType",RequestBody.create(MediaType. parse("text/plain"), "Record"));
+        map.put("file\"; filename=\""+ file.getName(),RequestBody.create(MediaType.parse("audio/*"),file));
+        Call<ResponseBody> call=service.uploadMultipleFiles(map);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
 
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            if (response.isSuccessful()) {
+                                String body = response.body().string();
+                                JSONObject object = new JSONObject(body);
+                                int id = object.getInt("fileId");
+                                Log.d("ghgfhgfhgfhf", "run: "+id);
+                            }else{
+                                Log.d("ghgfhgfhgfhf", "fail:body  "+response.body());
+                                Log.d("ghgfhgfhgfhf", "fail:code  "+response.code());
+                                Log.d("ghgfhgfhgfhf", "fail:msg  "+response.message());
+                            }
+
+                        }catch (Exception e){
+                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                Log.d("ghgfhgfhgfhf", "onFailure: "+t.toString());
+
+                Log.d("ghgfhgfhgfhf", "onFailure: ");
+            }
+        });
+    }
+
+
+    public void upload(){
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl(Constant.UPLOAD_URL)
+                .build();
+        UploadFile service=retrofit.create(UploadFile.class);
+        String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
+        File file=new File(path);
+        RequestBody requestFile =
+                RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part aFile =
+                MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+        String token=LoginActivity.sp.getString("token","");
+        Log.d("ghgfhgfhgfhf", token);
+        RequestBody body=new FormBody.Builder()
+                .add("access_token",token)
+                .add("fileType","record")
+                .build();
+
+        MultipartBody.Part access_token =
+                MultipartBody.Part.createFormData("access_token",token);
+        MultipartBody.Part fileType =
+                MultipartBody.Part.createFormData("fileType","record");
+        Call<ResponseBody> call=service.uploadFile(body,aFile);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        try{
+                            if (response.isSuccessful()) {
+                                String body = response.body().string();
+                                JSONObject object = new JSONObject(body);
+                                int id = object.getInt("fileId");
+                                Log.d("ghgfhgfhgfhf", "run: "+id);
+                            }
+
+                        }catch (Exception e){
+                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.d("ghgfhgfhgfhf", "onFailure: "+t.toString());
+
+                Log.d("ghgfhgfhgfhf", "onFailure: ");
+            }
+        });
+
+    }
 
 
 
