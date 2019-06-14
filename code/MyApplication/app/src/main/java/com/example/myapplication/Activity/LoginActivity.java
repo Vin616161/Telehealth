@@ -214,6 +214,7 @@ public class LoginActivity extends Activity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

@@ -26,7 +26,7 @@
                     android:textColor="@color/color_text2"
                     android:textColorHint="@color/color_text3"
                     android:textSize="14dp"
-                    tools:text="dsfsdf" />
+                    tools:text="dsfsdfd" />
 
                 <TextView
                     android:id="@+id/left_num"
@@ -35,7 +35,7 @@
                     android:includeFontPadding="false"
                     android:layout_gravity="right"
                     android:gravity="right"
-                    android:text="22"
+                    android:text="100"
                     android:textColor="@color/color_text3"/>
         </LinearLayout>
 
