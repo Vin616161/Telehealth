@@ -2,7 +2,7 @@ package com.example.myapplication.Utils;
 
 public class Constant {
     public static final String BASE_URL = "http://120.79.88.20:8080/v1/";//服务器
-    //public static final String BASE_URL = "http://192.168.2.105:8080/v1/";//本地
+    //public static final String BASE_URL = "http://192.168.2.106:8080/v1/";//本地
     public static final String IMG_LIST = "img_list"; //第几张图片
     public static final String POSITION = "position"; //第几张图片
     public static final String PIC_PATH = "pic_path"; //图片路径
@@ -24,4 +24,6 @@ public class Constant {
     public static final String WBP_URL=BASE_URL+"patient/uploadWBPData";
     public static final String LOADREPORT_URL=BASE_URL+"patient/getHistoryRecord/";
     public static final String UPLOAD_URL=BASE_URL+"file/";
+    public static final String GETDOCTOR_URL=BASE_URL+"doctor/";
+
 }

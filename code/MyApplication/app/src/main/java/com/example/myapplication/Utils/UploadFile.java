@@ -25,4 +25,5 @@ public interface UploadFile {
    // Call<ResponseBody> uploadFile(@Part("access_token") String token,@Part("fileType") String fileType, @Part MultipartBody.Part file);
 
 
+
 }

@@ -87,10 +87,12 @@ public class ChoosePhotoActivity extends AppCompatActivity {
                 switch (type){
                     case 2:
                         Intent intent=new Intent(ChoosePhotoActivity.this,TeleReservationActivity.class);
+                        intent.putExtra("diseaseId",diseaseId);
                         startActivity(intent);
                         break;
                     case 3:
                         Intent intent2=new Intent(ChoosePhotoActivity.this,OfflineReservationActivity.class);
+                        intent2.putExtra("diseaseId",diseaseId);
                         startActivity(intent2);
                         break;
                         default:

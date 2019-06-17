@@ -16,5 +16,9 @@ public interface NetRequestService {
     Call<ResponseBody> getBpHistory(@Query("access_token") String token,@Query("limit") int limit);
     @GET("getUser")
     Call<ResponseBody> getUser(@Query("access_token") String token);
+    @GET("queryDocListWithCondition")
+    Call<ResponseBody> getDocList(@Query("access_token") String token,@Query("departments_id") int diseaseId,@Query("date") String time,@Query("type") int type);
 
+    @GET("queryDocInfoForApp")
+    Call<ResponseBody> getDocDetail(@Query("access_token") String token,@Query("docId") int id);
 }

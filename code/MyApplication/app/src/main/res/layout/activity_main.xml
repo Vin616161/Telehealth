@@ -11,7 +11,7 @@
         <LinearLayout
             android:id="@+id/topLinearLayout"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="50dp"
             android:background="@color/colorPrimay"
             android:orientation="horizontal">
             <ImageButton
@@ -52,7 +52,7 @@
             <android.support.v4.view.ViewPager
                 android:id="@+id/adv_pager"
                 android:layout_width="fill_parent"
-                android:layout_height="250dp">
+                android:layout_height="220dp">
             </android.support.v4.view.ViewPager>
 
             <LinearLayout
@@ -67,7 +67,7 @@
             <LinearLayout
                 android:id="@+id/main_below"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_below="@+id/adv_pager"
                 android:background="@drawable/main_bg"
                 android:orientation="vertical">

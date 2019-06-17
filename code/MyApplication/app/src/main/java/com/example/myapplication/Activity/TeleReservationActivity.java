@@ -1,12 +1,14 @@
 package com.example.myapplication.Activity;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
@@ -15,12 +17,23 @@ import android.widget.TextView;
 import com.example.myapplication.Adapter.DoctorsAdapter;
 import com.example.myapplication.Bean.DoctorData;
 import com.example.myapplication.R;
+import com.example.myapplication.Utils.Constant;
+import com.example.myapplication.Utils.NetRequestService;
 import com.example.myapplication.View.BottomLayout;
 import com.example.myapplication.View.TitleLayout;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class TeleReservationActivity extends AppCompatActivity {
     private TitleLayout titleLayout;
@@ -29,6 +42,7 @@ public class TeleReservationActivity extends AppCompatActivity {
     private LinearLayout linearLayout;
     private BottomLayout bottomLayout;
     private TextView textView;
+    private int diseaseId;
     private int mYear;
     private int mMonth;
     private int mDay;
@@ -58,6 +72,8 @@ public class TeleReservationActivity extends AppCompatActivity {
             }
         });
         textView=findViewById(R.id.time_text);
+        Intent intent=getIntent();
+        diseaseId=intent.getIntExtra("diseaseId",0);
         linearLayout=findViewById(R.id.time);
         linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +89,7 @@ public class TeleReservationActivity extends AppCompatActivity {
                         mMonth=month;
                         mDay=dayOfMonth;
                         textView.setText(String.valueOf(mYear)+"-"+String.valueOf(mMonth+1)+"-"+String.valueOf(mDay));
+                        GetDocList(diseaseId,textView.getText().toString());
                     }
                 },mYear,mMonth,mDay);
                 dialog.show();
@@ -80,26 +97,84 @@ public class TeleReservationActivity extends AppCompatActivity {
         });
         bottomLayout=findViewById(R.id.bottom_bar);
         bottomLayout.setMode(2);
-        init();
+
+        //init();
         recyclerView=findViewById(R.id.recycler_view);
-        LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this);
-        DoctorsAdapter doctorsAdapter=new DoctorsAdapter(list);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(doctorsAdapter);
+
 
     }
 
-    private void init(){
-        DoctorData doctorData1=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc11),text[0]);
-        DoctorData doctorData2=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc22),text[1]);
-        DoctorData doctorData3=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc33),text[2]);
-        DoctorData doctorData4=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc44),text[3]);
-        DoctorData doctorData5=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc55),text[4]);
-        list.add(doctorData1);
-        list.add(doctorData2);
-        list.add(doctorData3);
-        list.add(doctorData4);
-        list.add(doctorData5);
+    public void GetDocList(int diseaseId,String time) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Constant.GETDOCTOR_URL)
+                .build();
+        NetRequestService netRequestService = retrofit.create(NetRequestService.class);
+        Call<ResponseBody> call=netRequestService.getDocList(LoginActivity.sp.getString("token", ""),diseaseId,time,1);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, final Response<ResponseBody> response) {
+               if (response.isSuccessful()){
+                   runOnUiThread(new Runnable() {
+                       @Override
+                       public void run() {
+                           try{
+                               list.clear();
+                               String body=response.body().string();
+                               Log.d("dsadsafadsad", "run:success ");
+                               JSONObject jsonObject=new JSONObject(body);
+                               JSONArray array=jsonObject.getJSONArray("data");
+                               for (int i=0;i<array.length();i++){
+                                   JSONObject object=array.getJSONObject(i);
+                                   int docId=object.getInt("docId");
+                                   String name =object.getString("name");
+                                   String title=object.getString("title");
+                                   String attending=object.getString("attending");
+                                   String introduction=object.getString("introduction");
+                                   String language=object.getString("language");
+                                   String text="\n姓名："+name+"\n"+
+                                           "职务-职称："+title+"\n"+
+                                           "擅长："+attending+"\n"+
+                                           "简介："+introduction+"\n"+
+                                           "语言："+language;
+                                   Log.d("dsadsafadsad", "run: "+text);
+                                   DoctorData doctorData=new DoctorData(docId,ContextCompat.
+                                           getDrawable(TeleReservationActivity.this,R.drawable.doc11),text);
+                                   list.add(doctorData);
+                               }
+                               LinearLayoutManager linearLayoutManager=new LinearLayoutManager(TeleReservationActivity.this);
+                               DoctorsAdapter doctorsAdapter=new DoctorsAdapter(list,1);
+                               recyclerView.setLayoutManager(linearLayoutManager);
+                               recyclerView.setAdapter(doctorsAdapter);
+
+                           }catch (Exception e){
+                               e.printStackTrace();
+                           }
+                       }
+                   });
+               }else{
+
+               }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
     }
+
+//    private void init(){
+//        DoctorData doctorData1=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc11),text[0]);
+//        DoctorData doctorData2=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc22),text[1]);
+//        DoctorData doctorData3=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc33),text[2]);
+//        DoctorData doctorData4=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc44),text[3]);
+//        DoctorData doctorData5=new DoctorData(ContextCompat.getDrawable(this,R.drawable.doc55),text[4]);
+//        list.add(doctorData1);
+//        list.add(doctorData2);
+//        list.add(doctorData3);
+//        list.add(doctorData4);
+//        list.add(doctorData5);
+//    }
 
 }
