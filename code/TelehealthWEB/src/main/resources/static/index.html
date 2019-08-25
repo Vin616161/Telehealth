@@ -17,11 +17,11 @@
         <div class="layui-logo">远程医疗系统医生PC端</div>
         <!-- 头部区域（可配合layui已有的水平导航） -->
         <ul class="layui-nav layui-layout-left">
-            <li class="layui-nav-item"><a href="index.html">首页</a></li>
-            <li class="layui-nav-item"><a lay-href="pages/myInfo.html">我的信息</a></li>
-            <li class="layui-nav-item"><a lay-href="pages/myTime.html">我的时间</a></li>
-            <li class="layui-nav-item"><a lay-href="pages/role.html">收费中心</a></li>
-            <li class="layui-nav-item"><a lay-href="pages/user.html">视频通话</a></li>
+            <!--<li class="layui-nav-item"><a href="index.html">首页</a></li>-->
+            <!--<li class="layui-nav-item"><a lay-href="pages/myInfo.html">我的信息</a></li>-->
+            <!--<li class="layui-nav-item"><a lay-href="pages/myTime.html">我的时间</a></li>-->
+            <!--<li class="layui-nav-item"><a lay-href="pages/role.html">收费中心</a></li>-->
+            <!--<li class="layui-nav-item"><a lay-href="pages/user.html">视频通话</a></li>-->
         </ul>
         <ul class="layui-nav layui-layout-right">
             <li class="layui-nav-item" lay-unselect>
@@ -36,29 +36,32 @@
     <div class="layui-side">
         <div class="layui-side-scroll">
             <ul class="layui-nav layui-nav-tree" style="margin-top: 10px;">
-                <li class="layui-nav-item layui-nav-itemed">
-                    <a><i class="layui-icon layui-icon-set"></i>&emsp;预约管理</a>
-                    <dl class="layui-nav-child">
-                        <!--<dd class="layui-this"><a lay-href="pages/user.html">远程预约</a></dd>-->
-                        <dd><a lay-href="pages/remoteAppoint.html">远程预约</a></dd>
-                        <dd><a lay-href="pages/offlineAppoint.html">线下预约</a></dd>
-                    </dl>
+                <!--<li class="layui-nav-item layui-nav-itemed">-->
+                    <!--<a><i class="layui-icon layui-icon-set"></i>&emsp;预约管理</a>-->
+                    <!--<dl class="layui-nav-child">-->
+                        <!--<dd><a lay-href="pages/remoteAppoint.html">远程预约</a></dd>-->
+                        <!--<dd><a lay-href="pages/offlineAppoint.html">线下预约</a></dd>-->
+                    <!--</dl>-->
+                <!--</li>-->
+                <li class="layui-nav-item">
+                    <a lay-href="pages/myInfo.html"><i class="layui-icon layui-icon-list"></i>&emsp;我的信息</a>
                 </li>
-
+                <li class="layui-nav-item">
+                    <a lay-href="pages/remoteAppoint.html"><i class="layui-icon layui-icon-list"></i>&emsp;远程预约</a>
+                </li>
+                <li class="layui-nav-item">
+                    <a lay-href="pages/offlineAppoint.html"><i class="layui-icon layui-icon-list"></i>&emsp;线下预约</a>
+                </li>
                 <li class="layui-nav-item">
                     <a lay-href="pages/role.html"><i class="layui-icon layui-icon-list"></i>&emsp;接诊记录</a>
-                    <!--<dl class="layui-nav-child">-->
-                        <!--<dd><a lay-href="pages/user.html">接诊时段</a></dd>-->
-                        <!--<dd><a lay-href="pages/authority.html">接诊记录</a></dd>-->
-                    <!--</dl>-->
+                </li>
+                <li class="layui-nav-item">
+                    <a lay-href="pages/upload.html"><i class="layui-icon layui-icon-list"></i>&emsp;上传文件</a>
                 </li>
 
                 <li class="layui-nav-item">
                     <a lay-href="pages/role.html"><i class="layui-icon layui-icon-list" ></i>&emsp;意见反馈</a>
                 </li>
-                <!--<li class="layui-nav-item">-->
-                    <!--<a><i class="layui-icon layui-icon-console"></i>&emsp;联系我们</a>-->
-                <!--</li>-->
             </ul>
         </div>
     </div>

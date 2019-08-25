@@ -13,15 +13,11 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 @Api(value = "医生相关的接口", tags = "doctor")
 @RestController
@@ -51,7 +47,7 @@ public class DoctorController extends BaseController {
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @RequestMapping(value = "/queryTime", method = RequestMethod.GET)
-    public PageResult<DoctorTime> getTime(Integer page, Integer limit,  HttpServletRequest request) {
+    public PageResult<DoctorTime> getTime(Integer page, Integer limit, HttpServletRequest request) {
         if (page == null) {
             page = 0;
         }
@@ -101,7 +97,7 @@ public class DoctorController extends BaseController {
         int yearNow = cal.get(Calendar.YEAR);  //当前年份
         int monthNow = cal.get(Calendar.MONTH);  //当前月份
         int dayOfMonthNow = cal.get(Calendar.DAY_OF_MONTH); //当前日期
-        for (int i = 0; i < appointmentList.size(); i++){
+        for (int i = 0; i < appointmentList.size(); i++) {
             AppointWithPatInfo patInfo = new AppointWithPatInfo();
             patInfo.setId(appointmentList.get(i).getId());
             patInfo.setName(users.get(i).getTrueName());
@@ -114,7 +110,7 @@ public class DoctorController extends BaseController {
             if (monthNow <= monthBirth) {
                 if (monthNow == monthBirth) {
                     if (dayOfMonthNow < dayOfMonthBirth) age--;//当前日期在生日之前，年龄减一
-                }else{
+                } else {
                     age--;//当前月份在生日之前，年龄减一
                 }
             }
@@ -130,7 +126,7 @@ public class DoctorController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
-    @RequestMapping(value = "/queryDocInfo" , method = RequestMethod.GET)
+    @RequestMapping(value = "/queryDocInfo", method = RequestMethod.GET)
     public DoctorWithUser getDocInfo(HttpServletRequest request) {
         DoctorWithUser doctor = new DoctorWithUser();
 //        Doctor doctor1 = doctorService.selectById(getLoginUserId(request));
@@ -165,91 +161,91 @@ public class DoctorController extends BaseController {
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @PutMapping(value = "/updateDocInfo")
-        public JsonResult updateDocInfo(String username, String sex,String nickName, String clinic, String address, String department,
-                                        String phone, String email, String introduction, HttpServletRequest request){
-            if (department == null) {
-                return JsonResult.error("科室不能为空！");
+    public JsonResult updateDocInfo(String username, String sex, String nickName, String clinic, String address, String department,
+                                    String phone, String email, String introduction, HttpServletRequest request) {
+        if (department == null) {
+            return JsonResult.error("科室不能为空！");
+        }
+        if (clinic == null) {
+            return JsonResult.error("诊所不能为空！");
+        }
+        if (sex == null) {
+            return JsonResult.error("性别不能为空！");
+        }
+
+        User user = userService.getByUsername(username);
+        Integer docId = user.getUserId();
+        Doctor doctor = doctorService.getByDocId(docId);
+        if (sex != null) {
+            user.setSex(sex);
+        }
+        if (nickName != null) {
+            user.setTrueName(nickName);
+            doctor.setName(nickName);
+        }
+        if (clinic != null && address != null) {
+            List<Clinic> clinicList = clinicService.selectList(null);
+            boolean flag = false;//标识医生单位是否在诊所表内存在
+            for (Clinic c : clinicList) {
+                if (c.getName().equals(clinic) && c.getAddress().equals(address)) {
+                    doctor.setCliId(c.getId());
+                    flag = true;
+                    break;
+                }
             }
-            if (clinic == null) {
-                return JsonResult.error("诊所不能为空！");
-            }
-            if (sex == null) {
-                return JsonResult.error("性别不能为空！");
+            //医生单位在诊所表内不存在，要插入
+            if (!flag) {
+                Clinic clinic1 = new Clinic();
+                clinic1.setAddress(address);
+                clinic1.setName(clinic);
+                if (!clinicService.insert(clinic1)) {
+                    throw new BusinessException("添加诊所失败");
+                }
+                //更新医生表的诊所id
+                Clinic clinic2 = clinicService.getByName(clinic);
+                doctor.setCliId(clinic2.getId());
             }
 
-            User user = userService.getByUsername(username);
-            Integer docId = user.getUserId();
-            Doctor doctor = doctorService.getByDocId(docId);
-            if (sex != null){
-                user.setSex(sex);
-            }
-            if (nickName != null){
-                user.setTrueName(nickName);
-                doctor.setName(nickName);
-            }
-            if (clinic != null && address != null){
-                List<Clinic> clinicList = clinicService.selectList(null);
-                boolean flag = false;//标识医生单位是否在诊所表内存在
-                for (Clinic c : clinicList){
-                    if (c.getName().equals(clinic) && c.getAddress().equals(address)){
-                        doctor.setCliId(c.getId());
-                        flag = true;
-                        break;
-                    }
-                }
-                //医生单位在诊所表内不存在，要插入
-                if (!flag) {
-                    Clinic clinic1 = new Clinic();
-                    clinic1.setAddress(address);
-                    clinic1.setName(clinic);
-                    if (!clinicService.insert(clinic1)) {
-                        throw new BusinessException("添加诊所失败");
-                    }
-                    //更新医生表的诊所id
-                    Clinic clinic2 = clinicService.getByName(clinic);
-                    doctor.setCliId(clinic2.getId());
-                }
-
-            }
-            if (department != null){
-                boolean flag = false;//标识科室是否在科室表内存在
-                List<Department> departmentList = departmentService.selectList(null);
-                for (Department d : departmentList){
-                    if (d.getName().equals(department)){
-                        doctor.setDepId(d.getId());
-                        flag = true;
-                        break;
-                    }
-                }
-                if (!flag) {
-                    Department department1 = new Department();
-                    department1.setName(department);
-                    if (!departmentService.insert(department1)) {
-                        throw new BusinessException("添加科室失败");
-                    }
-                    //更新医生表的科室id
-                    EntityWrapper<Department> wrapper1 = new EntityWrapper<>();
-                    wrapper1.eq("name",department);
-                    department1 = departmentService.selectOne(wrapper1);
-                    doctor.setCliId(department1.getId());
+        }
+        if (department != null) {
+            boolean flag = false;//标识科室是否在科室表内存在
+            List<Department> departmentList = departmentService.selectList(null);
+            for (Department d : departmentList) {
+                if (d.getName().equals(department)) {
+                    doctor.setDepId(d.getId());
+                    flag = true;
+                    break;
                 }
             }
-            if (phone != null){
-                user.setPhone(phone);
-            }
-            if (email != null){
-                user.setEmail(email);
-            }
-            if (introduction != null){
-                doctor.setIntroduction(introduction);
-            }
-
-            if (userService.updateById(user) && doctorService.updateById(doctor)) {
-                return JsonResult.ok();
-            }else{
-                return JsonResult.error();
+            if (!flag) {
+                Department department1 = new Department();
+                department1.setName(department);
+                if (!departmentService.insert(department1)) {
+                    throw new BusinessException("添加科室失败");
+                }
+                //更新医生表的科室id
+                EntityWrapper<Department> wrapper1 = new EntityWrapper<>();
+                wrapper1.eq("name", department);
+                department1 = departmentService.selectOne(wrapper1);
+                doctor.setCliId(department1.getId());
             }
         }
+        if (phone != null) {
+            user.setPhone(phone);
+        }
+        if (email != null) {
+            user.setEmail(email);
+        }
+        if (introduction != null) {
+            doctor.setIntroduction(introduction);
+        }
+
+        if (userService.updateById(user) && doctorService.updateById(doctor)) {
+            return JsonResult.ok();
+        } else {
+            return JsonResult.error();
+        }
+    }
 
 
     @ApiOperation(value = "app端查询医生个人信息", notes = "")
@@ -257,22 +253,26 @@ public class DoctorController extends BaseController {
             @ApiImplicitParam(name = "docId", value = "医生id", required = true, dataType = "Integer", paramType = "form"),
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
-    @PostMapping(value = "/queryDocInfoForApp" )
-    public JsonResult getDocInfoForApp(Integer docId, HttpServletRequest request) {
-        DoctorWithUser doctor = new DoctorWithUser();
+    @GetMapping(value = "/queryDocInfoForApp")
+    public JsonResult getDocInfoForApp(Integer docId) {
         User user = userService.selectById(docId);
-        Doctor doctor1 = doctorService.getByDocId(docId);
-        String clinic = clinicService.selectById(doctor1.getCliId()).getName();
-        String depart = departmentService.selectById(doctor1.getDepId()).getName();
-        doctor.setEmail(user.getEmail());
-        doctor.setClinic(clinic);
-        doctor.setDepartment(depart);
-        doctor.setNickName(user.getNickName());
-        doctor.setPhone(user.getPhone());
-        doctor.setSex(user.getSex());
-        doctor.setUsername(user.getUsername());
-        doctor.setIntroduction(doctor1.getIntroduction());
-        return JsonResult.ok("success").put("doctorInfo", doctor);
+        Doctor doctor = doctorService.getByDocId(docId);
+        String clinic = clinicService.selectById(doctor.getCliId()).getName();
+        String depart = departmentService.selectById(doctor.getDepId()).getName();
+        EntityWrapper<DoctorTime> timeEntityWrapper = new EntityWrapper<>();
+        timeEntityWrapper.eq("doc_id",docId);
+        timeEntityWrapper.eq("appointed", 0);
+        List<DoctorTime> list = doctorTimeService.selectList(timeEntityWrapper);
+        return JsonResult.ok("success")
+                .put("name", doctor.getName())
+                .put("info", doctor.getIntroduction())
+                .put("attending", doctor.getAttending())
+                .put("title", doctor.getTitle())
+                .put("language", doctor.getLanguage())
+                .put("sex", user.getSex())
+                .put("clinic",clinic)
+                .put("depart",depart)
+                .put("time",list);
     }
 
     @ApiOperation(value = "app端查询全部医生，包含科室/病种信息")
@@ -288,7 +288,7 @@ public class DoctorController extends BaseController {
         EntityWrapper<Doctor> wrapper = new EntityWrapper<>();
         List<Doctor> doctors = doctorService.selectList(wrapper);
         //遍历医生列表，与科室表进行关联查询
-        for (Doctor d: doctors) {
+        for (Doctor d : doctors) {
             department = departmentService.selectById(d.getDepId());
             DoctorWithDepart doctorWithDepart = new DoctorWithDepart();
             doctorWithDepart.setDepartName(department.getName());
@@ -297,6 +297,53 @@ public class DoctorController extends BaseController {
             list.add(doctorWithDepart);
         }
         return JsonResult.ok("success").put("doctorList", list);
+    }
+
+    @ApiOperation(value = "app端根据条件筛选医生")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "page", value = "第几页", required = true, dataType = "Integer", paramType = "form"),
+            @ApiImplicitParam(name = "limit", value = "每页多少条", required = true, dataType = "Integer", paramType = "form"),
+            @ApiImplicitParam(name = "date", value = "日期", dataType = "String", paramType = "form"),
+            @ApiImplicitParam(name = "departments_id", value = "病种id", dataType = "String", paramType = "form"),
+            @ApiImplicitParam(name = "type", value = "预约类型", dataType = "Integer", paramType = "form"),
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
+    })
+    @GetMapping(value = "/queryDocListWithCondition")
+    public PageResult<Doctor> getDocsVsCondition(Integer page, Integer limit, String departmentsId, String date,Integer type ) {
+        //先检索时间
+        EntityWrapper<DoctorTime> timeEntityWrapper = new EntityWrapper<>();
+        if(date!=null&& !date.trim().isEmpty()){
+            timeEntityWrapper.eq("date", date);
+        }
+        //1为线上，2为线下
+        timeEntityWrapper.eq("type", type);
+        //是否被预约
+        timeEntityWrapper.eq("appointed", 0);
+        List<DoctorTime> timeList = doctorTimeService.selectList(timeEntityWrapper);
+        Set<Integer> docIds = new HashSet<>();
+        for (DoctorTime dt : timeList) {
+            docIds.add(dt.getDocId());
+        }
+        //此处wrapper的逻辑是如果集合为空就跳过该限制条件，要使条件生效 要添加一个不存在的id
+        if(docIds.size()==0){
+            docIds.add(-1);
+        }
+        if (page == null) {
+            page = 0;
+        }
+        if (limit == null) {
+            limit = 10;
+        }
+        Page<Doctor> doctorPage = new Page<>(page, limit);
+        EntityWrapper<Doctor> wrapper = new EntityWrapper<>();
+        //根据病种筛选
+        if (departmentsId != null && !departmentsId.trim().isEmpty()) {
+            wrapper.eq("dep_id", departmentsId);
+        }
+        wrapper.in("doc_id",docIds);
+        doctorService.selectPage(doctorPage, wrapper);
+        List<Doctor> userList = doctorPage.getRecords();
+        return new PageResult<>(userList, doctorPage.getTotal());
     }
 
     @ApiOperation(value = "app端线上预约医生")
@@ -323,10 +370,10 @@ public class DoctorController extends BaseController {
         wrapper.eq("appointed", 0);//未被预约
         wrapper.setSqlSelect("distinct doc_id");
         List<DoctorTime> doctors = doctorTimeService.selectList(wrapper);
-        for (DoctorTime dt: doctors) {
+        for (DoctorTime dt : doctors) {
             doctor = doctorService.getByDocId(dt.getDocId());
             //查出列表中符合该科室/病种的医生
-            if (doctor.getDepId() == departId){
+            if (doctor.getDepId() == departId) {
                 User user = userService.selectById(doctor.getDocId());
                 DoctorWithTimeAndUser doctorWithTimeAndUser = new DoctorWithTimeAndUser();
                 doctorWithTimeAndUser.setId(doctor.getId());
@@ -367,13 +414,13 @@ public class DoctorController extends BaseController {
     })
     @PostMapping(value = "/appointOffline")
     public JsonResult appointOffline(Integer departId, String date, String doctorName, String clinicName,
-                                                      String sex, String language, String insurance, HttpServletRequest request) {
+                                     String sex, String language, String insurance, HttpServletRequest request) {
         List<DoctorWithTimeAndUser> list = new ArrayList<>();
 
         //将string型的日期转化为sql的Date型
         Date date1 = null;
-        if (date != null){
-            date1= new java.sql.Date(MainController.strToDate(date).getTime());
+        if (date != null) {
+            date1 = new java.sql.Date(MainController.strToDate(date).getTime());
         }
 
         EntityWrapper<DoctorTime> wrapper1 = new EntityWrapper<>();
@@ -381,15 +428,15 @@ public class DoctorController extends BaseController {
         wrapper1.eq("type", 2);//线下预约类型
         wrapper1.eq("appointed", 0);//未被预约
         Integer clinicId = null;
-        if (clinicName != null){
+        if (clinicName != null) {
             //查出clinicName对应的clinicId
             clinicId = clinicService.getByName(clinicName).getId();
         }
 
         //查出符合条件的医生
         List<Doctor> doctors = doctorService.getOffDoctor(departId, clinicId, sex, date1, doctorName, insurance, language);
-        for (Doctor doctor : doctors){
-            User user  = userService.selectById(doctor.getDocId());
+        for (Doctor doctor : doctors) {
+            User user = userService.selectById(doctor.getDocId());
             DoctorWithTimeAndUser doctorWithTimeAndUser = new DoctorWithTimeAndUser();
             doctorWithTimeAndUser.setId(doctor.getId());
             doctorWithTimeAndUser.setDocId(doctor.getDocId());
@@ -414,6 +461,7 @@ public class DoctorController extends BaseController {
         }
         return JsonResult.ok("success").put("appointOffline", list);
     }
+
 
 //    @ApiOperation(value = "医生上传头像图片")
 //    @ApiImplicitParams({

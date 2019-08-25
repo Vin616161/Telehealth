@@ -1,15 +1,13 @@
 package com.wf.ew.system.model;
 
-import com.baomidou.mybatisplus.annotations.TableId;
-import com.baomidou.mybatisplus.annotations.TableName;
-
 import java.sql.Date;
+import java.util.List;
 
 
 //@TableName("doctors")
-public class DoctorWithUser extends Doctor{
+public class DoctorWithUser extends Doctor {
 
-//    @TableId
+    //    @TableId
     private String username;
     private String nickName;
     private String sex;
@@ -19,6 +17,11 @@ public class DoctorWithUser extends Doctor{
     private String department;
     private String clinic;
     private String address;
+    private List<DoctorTime> availableTimes;
+
+    public List<DoctorTime> getAvailableTimes() { return availableTimes; }
+
+    public void setAvailableTimes(List<DoctorTime> availableTimes) { this.availableTimes = availableTimes; }
 
     public String getUsername() {
         return username;

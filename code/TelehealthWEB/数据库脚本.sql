@@ -8,7 +8,7 @@ Source Database       : easyweb
 
 Target Server Type    : MYSQL
 Target Server Version : 80015
-File Encoding         : 65001
+FileEntity Encoding         : 65001
 
 Date: 2019-05-15 12:53:44
 */

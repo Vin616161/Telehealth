@@ -20,7 +20,7 @@ public class DoctorTime {
 
     private Time endTime;
 
-    private Integer type;
+    private Integer type;//1是线上 2是线下
 
     private Integer appointed;
 

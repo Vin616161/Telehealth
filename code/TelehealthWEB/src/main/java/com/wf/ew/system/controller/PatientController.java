@@ -13,11 +13,9 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,10 @@ import static com.wf.ew.system.controller.MainController.strToDate;
 public class PatientController extends BaseController {
     @Autowired
     private PatientService patientService;
+    @Autowired
+    private BloodPressureService bloodPressureService;
+    @Autowired
+    private BloodOxygenService bloodOxygenService;
     @Autowired
     private PatFileService patFileService;
     @Autowired
@@ -51,7 +53,7 @@ public class PatientController extends BaseController {
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @PostMapping(value = "/baseInfo/{id}")
-    public PatientWithUser getPatInfo(@PathVariable("id")Integer patId) {
+    public PatientWithUser getPatInfo(@PathVariable("id") Integer patId) {
         PatientWithUser patientWithUser = new PatientWithUser();
         User user = userService.selectById(patId);
         Patient patient = patientService.getByPatId(patId);
@@ -69,7 +71,7 @@ public class PatientController extends BaseController {
         if (monthNow <= monthBirth) {
             if (monthNow == monthBirth) {
                 if (dayOfMonthNow < dayOfMonthBirth) age--;//当前日期在生日之前，年龄减一
-            }else{
+            } else {
                 age--;//当前月份在生日之前，年龄减一
             }
         }
@@ -114,7 +116,7 @@ public class PatientController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "page", value = "第几页", required = true, dataType = "Integer", paramType = "form"),
             @ApiImplicitParam(name = "limit", value = "每页多少条", required = true, dataType = "Integer", paramType = "form"),
-            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer",required = true, paramType = "form"),
+            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer", required = true, paramType = "form"),
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @RequestMapping(value = "/testIndex", method = RequestMethod.GET)
@@ -136,7 +138,7 @@ public class PatientController extends BaseController {
 
     @ApiOperation(value = "app端查询患者所有检测指标")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer",required = true, paramType = "form"),
+            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer", required = true, paramType = "form"),
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @PostMapping(value = "/getAllTIForAPP")
@@ -149,7 +151,7 @@ public class PatientController extends BaseController {
 
     @ApiOperation(value = "app端查询患者最新一条检测指标")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer",required = true, paramType = "form"),
+            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer", required = true, paramType = "form"),
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @PostMapping(value = "/getLatestTIForAPP")
@@ -160,23 +162,23 @@ public class PatientController extends BaseController {
         wrapper.orderBy("record_time", false);
         List<TestIndex> list = testIndexService.selectList(wrapper);
         TestIndex testIndex = list.get(0);
-        for (int i = 0; i < list.size(); i++){
-            if (testIndex.getBloodPressure() == null ){
+        for (int i = 0; i < list.size(); i++) {
+            if (testIndex.getBloodPressure() == null) {
                 testIndex.setBloodPressure(list.get(i).getBloodPressure());
             }
-            if (testIndex.getBloodOxygen() == null){
+            if (testIndex.getBloodOxygen() == null) {
                 testIndex.setBloodOxygen(list.get(i).getBloodOxygen());
             }
-            if (testIndex.getHeartRate() == null){
+            if (testIndex.getHeartRate() == null) {
                 testIndex.setHeartRate(list.get(i).getHeartRate());
             }
-            if (String.valueOf(testIndex.getTemperature()) == null){
+            if (String.valueOf(testIndex.getTemperature()) == null) {
                 testIndex.setTemperature(list.get(i).getTemperature());
             }
-            if (String.valueOf(testIndex.getHeight()) == null){
+            if (String.valueOf(testIndex.getHeight()) == null) {
                 testIndex.setHeight(list.get(i).getHeight());
             }
-            if (String.valueOf(testIndex.getWeight()) == null){
+            if (String.valueOf(testIndex.getWeight()) == null) {
                 testIndex.setWeight(list.get(i).getWeight());
             }
         }
@@ -184,21 +186,133 @@ public class PatientController extends BaseController {
     }
 
     @ResponseBody
+    @ApiOperation(value = "app端上传患者血压数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recordTime", value = "记录时间", dataType = "Long", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "cuff_pressure", value = "袖带压", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "sys_pressure", value = "收缩压", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "dia_pressure", value = "舒张压", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "heart_rate", value = "心率", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
+    })
+    @PostMapping(value = "/uploadWBPData")
+    public JsonResult updateWBPData(Long recordTime, Integer cuff_pressure, Integer sys_pressure, Integer dia_pressure,
+                                    Integer heart_rate, HttpServletRequest request) {
+        int patientId = getLoginUserId(request);
+        BloodPressure pressure = new BloodPressure();
+        pressure.setPatientId(patientId);
+        pressure.setRecordTime(new Date(recordTime));
+        pressure.setCuffPressure(cuff_pressure);
+        pressure.setSystolicPressure(sys_pressure);
+        pressure.setDiastolicPressure(dia_pressure);
+        pressure.setHeartRate(heart_rate);
+        if (bloodPressureService.insert(pressure)) {
+            return JsonResult.ok("上传成功");
+        } else {
+            return JsonResult.error("上传失败");
+        }
+    }
+
+    @ResponseBody
+    @ApiOperation(value = "app端上传患者血氧数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "recordTime", value = "记录时间", dataType = "Long", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "blood_oxygen", value = "血氧", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "pi", value = "不知道", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "resvalue", value = "不知道", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "heart_rate", value = "心率", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
+    })
+    @PostMapping(value = "/uploadM70CData")
+    public JsonResult uploadM70CData(Long recordTime, Integer blood_oxygen, Double pi, Integer resvalue,
+                                     Integer heart_rate, HttpServletRequest request) {
+        int patientId = getLoginUserId(request);
+        BloodOxygen oxy = new BloodOxygen();
+        oxy.setPatientId(patientId);
+        oxy.setRecordTime(new Date(recordTime));
+        oxy.setBloodOxygen(blood_oxygen);
+        oxy.setPi(pi);
+        oxy.setResvalue(resvalue);
+        oxy.setHeartRate(heart_rate);
+        if (bloodOxygenService.insert(oxy)) {
+            return JsonResult.ok("上传成功");
+        } else {
+            return JsonResult.error("上传失败");
+        }
+    }
+
+    @ApiOperation(value = "app端查询最近一次所有项目的所测数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
+    })
+    @GetMapping(value = "/loadReport")
+    public JsonResult getLastReport(HttpServletRequest request) {
+        BloodOxygen oxy = bloodOxygenService.getLastByLimit(1);
+        BloodPressure pressure = bloodPressureService.getLastByLimit(1);
+        return JsonResult.ok("success").put("oxygen", oxy).put("pressure", pressure);
+    }
+
+    @ApiOperation(value = "app端查询血压历史数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form"),
+            @ApiImplicitParam(name = "page", value = "第几页", required = true, dataType = "Integer", paramType = "form"),
+            @ApiImplicitParam(name = "limit", value = "每页多少条", required = true, dataType = "Integer", paramType = "form"),
+    })
+    @GetMapping(value = "/getHistoryRecord/blood_pressure")
+    public PageResult<BloodPressure> listBloodPressure(Integer page, Integer limit, HttpServletRequest request) {
+        if (page == null) {
+            page = 0;
+        }
+        if (limit == null) {
+            limit = 10;
+        }
+        Page<BloodPressure> bloodPressurePage = new Page<>(page, limit);
+        EntityWrapper<BloodPressure> wrapper = new EntityWrapper<>();
+        wrapper.orderBy("record_time", false);
+        bloodPressureService.selectPage(bloodPressurePage,wrapper);
+        List<BloodPressure> list = bloodPressurePage.getRecords();
+        return new PageResult<>(list,bloodPressurePage.getTotal());
+
+    }
+    @ApiOperation(value = "app端查询血氧历史数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form"),
+            @ApiImplicitParam(name = "page", value = "第几页", required = true, dataType = "Integer", paramType = "form"),
+            @ApiImplicitParam(name = "limit", value = "每页多少条", required = true, dataType = "Integer", paramType = "form"),
+    })
+    @GetMapping(value = "/getHistoryRecord/blood_oxygen")
+    public PageResult<BloodOxygen> listBloodOxygen(Integer page, Integer limit, HttpServletRequest request) {
+        if (page == null) {
+            page = 0;
+        }
+        if (limit == null) {
+            limit = 10;
+        }
+        Page<BloodOxygen> bloodOxygenPage = new Page<>(page, limit);
+        EntityWrapper<BloodOxygen> wrapper = new EntityWrapper<>();
+        wrapper.orderBy("record_time", false);
+        bloodOxygenService.selectPage(bloodOxygenPage,wrapper);
+        List<BloodOxygen> list = bloodOxygenPage.getRecords();
+        return new PageResult<>(list,bloodOxygenPage.getTotal());
+
+    }
+
+    @ResponseBody
     @ApiOperation(value = "app端上传患者体检报告/检测指标")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "height", value = "身高", dataType = "String",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "weight", value = "体重", dataType = "String",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "temperature", value = "体温", dataType = "String",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "bloodPressure", value = "血压", dataType = "String",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "bloodOxygen", value = "血氧", dataType = "Integer",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "heartRate", value = "心率", dataType = "Integer",required = true, paramType = "form"),
-            @ApiImplicitParam(name = "recordTime", value = "上传时间", dataType = "String",required = true, paramType = "form"),
+            @ApiImplicitParam(name = "patId", value = "患者id", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "height", value = "身高", dataType = "String", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "weight", value = "体重", dataType = "String", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "temperature", value = "体温", dataType = "String", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "bloodPressure", value = "血压", dataType = "String", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "bloodOxygen", value = "血氧", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "heartRate", value = "心率", dataType = "Integer", required = true, paramType = "form"),
+            @ApiImplicitParam(name = "recordTime", value = "上传时间", dataType = "String", required = true, paramType = "form"),
             @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
     })
     @PostMapping(value = "/uploadTestIndex")
     public JsonResult updateIndex(Integer patId, String height, String weight, String temperature, String bloodPressure,
-                                  Integer bloodOxygen, Integer heartRate, String recordTime, HttpServletRequest servletRequest){
+                                  Integer bloodOxygen, Integer heartRate, String recordTime, HttpServletRequest servletRequest) {
         TestIndex testIndex = new TestIndex();
         testIndex.setPatId(patId);
         testIndex.setHeight(Double.valueOf(height));
@@ -208,9 +322,9 @@ public class PatientController extends BaseController {
         testIndex.setBloodOxygen(bloodOxygen);
         testIndex.setHeartRate(heartRate);
         testIndex.setRecordTime(strToDate(recordTime));
-        if (testIndexService.insert(testIndex)){
+        if (testIndexService.insert(testIndex)) {
             return JsonResult.ok("上传成功");
-        }else {
+        } else {
             return JsonResult.error("上传失败");
         }
     }
@@ -220,48 +334,49 @@ public class PatientController extends BaseController {
 //            @ApiImplicitParam(name = "patId", value = "患者id", required = true, dataType = "Integer", paramType = "form"),
 //            @ApiImplicitParam(name = "access_token", value = "令牌", required = true, dataType = "String", paramType = "form")
 //    })
-    @RequestMapping(value = "/saveFile/{id}/{access_token}",method = RequestMethod.POST)
-    public Object addFile(MultipartFile file, HttpServletRequest request)throws Exception {
+    @RequestMapping(value = "/saveFile/{id}/{access_token}", method = RequestMethod.POST)
+    public Object addFile(MultipartFile file, HttpServletRequest request) throws Exception {
 
-        String prefix="";
-        String dateStr="";
+        String prefix = "";
+        String dateStr = "";
         //保存上传
         OutputStream out = null;
-        InputStream fileInput=null;
+        InputStream fileInput = null;
         try {
-            if(file!=null){
+            if (file != null) {
                 String originalName = file.getOriginalFilename();
-                prefix=originalName.substring(originalName.lastIndexOf(".")+1);
+                prefix = originalName.substring(originalName.lastIndexOf(".") + 1);
                 dateStr = new Date().toString();
-                String filepath = request.getServletContext().getRealPath("/static")  + dateStr + "." + prefix;
+                String filepath = request.getServletContext().getRealPath("/static") + dateStr + "." + prefix;
                 filepath = filepath.replace("\\", "/");
-                File files=new File(filepath);
+                File files = new File(filepath);
                 //打印查看上传路径
                 System.out.println(filepath);
-                if(!files.getParentFile().exists()){
+                if (!files.getParentFile().exists()) {
                     files.getParentFile().mkdirs();
                 }
                 file.transferTo(files);
             }
-        }catch (Exception e){
-        }finally{
+        } catch (Exception e) {
+        } finally {
             try {
-                if(out!=null){
+                if (out != null) {
                     out.close();
                 }
-                if(fileInput!=null){
+                if (fileInput != null) {
                     fileInput.close();
                 }
             } catch (IOException e) {
             }
         }
 
-        Map<String,Object> map2=new HashMap<>();
-        Map<String,Object> map=new HashMap<>();
-        map.put("code",0);
-        map.put("msg","");
-        map.put("data",map2);
-        map2.put("src","../../../static" + dateStr + "." + prefix);
+        Map<String, Object> map2 = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        map.put("code", 0);
+        map.put("msg", "");
+        map.put("data", map2);
+        map2.put("src", "../../../static" + dateStr + "." + prefix);
         return map;
     }
+
 }
