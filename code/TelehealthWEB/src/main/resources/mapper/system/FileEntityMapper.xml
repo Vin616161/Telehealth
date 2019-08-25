@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wf.ew.system.dao.FileEntityMapper">
+
+    <insert id="insertRetId" parameterType="com.wf.ew.system.model.FileEntity" useGeneratedKeys="true" keyProperty="fileId">
+       insert into file(file_name, file_type,create_time,local_url,suffix,size)
+       values(#{fileName}, #{fileType},#{createTime},#{localUrl},#{suffix},#{size})
+    </insert>
+
+</mapper>
