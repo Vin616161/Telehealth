@@ -163,61 +163,6 @@ public class HealthQuestionActivity extends AppCompatActivity {
     }
 
 
-    public void uploadFile(){
-        Map<String, RequestBody> files = new HashMap<>();
-        Retrofit retrofit=new Retrofit.Builder()
-                .baseUrl(Constant.UPLOAD_URL)
-                .build();
-        UploadFile service=retrofit.create(UploadFile.class);
-        //files.put("diseaseId",RequestBody.create(MediaType.parse("text/plain"),String.valueOf(diseaseId)));
-        String token=LoginActivity.sp.getString("access_token","");
-        files.put("access_token",RequestBody.create(MediaType.parse("text/plain"),token));
-        String path= Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+0+".mp3";
-        list.add(path);
-        File file=new File(path);
-        files.put("file",RequestBody.create(MediaType.parse("audio/*"),file));
-//        for (int i=0;i<num;i++){
-//            String path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/audio_"+i+".mp3";
-//            list.add(path);
-//            File file=new File(path);
-//            files.put("audio_"+i,RequestBody.create(MediaType.parse("audio/*"),file));
-//        }
-//        for (int j=0;j<mPicList.size();j++){
-//            list.add(mPicList.get(j));
-//            File file=new File(mPicList.get(j));
-//            files.put("image_"+j,RequestBody.create(MediaType.parse("image/*"),file));
-//        }
-        retrofit2.Call<ResponseBody> call=service.uploadMultipleFiles(files);
-        call.enqueue(new retrofit2.Callback<ResponseBody>() {
-            @Override
-            public void onResponse(retrofit2.Call<ResponseBody> call, final retrofit2.Response<ResponseBody> response) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try{
-                            if (response.isSuccessful()) {
-                                String body = response.body().string();
-                                JSONObject object = new JSONObject(body);
-                                int id = object.getInt("fileId");
-                                Log.d("ghgfhgfhgfhf", "run: "+id);
-                            }
-
-                        }catch (Exception e){
-                            Log.d("ghgfhgfhgfhf", "expection: "+e.toString());
-                            e.printStackTrace();
-                        }
-
-                    }
-                });
-
-            }
-            @Override
-            public void onFailure(retrofit2.Call<ResponseBody> call, Throwable t) {
-                Log.d("ghgfhgfhgfhf", "onFailure: ");
-
-            }
-        });
-    }
 
 
 

@@ -18,6 +18,7 @@ import java.util.List;
 
 public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHolder> {
      List<DoctorData> mList;
+     int type;
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -31,8 +32,9 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
 
         }
     }
-    public DoctorsAdapter(List<DoctorData> list){
+    public DoctorsAdapter(List<DoctorData> list,int type){
         mList=list;
+        this.type=type;
     }
 
     @Override
@@ -44,8 +46,10 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
             public void onClick(View view) {
                 int position= viewHolder.getAdapterPosition();
                 DoctorData doctorData=mList.get(position);
+                int docId=doctorData.getDocId();
                 Intent intent =new Intent(parent.getContext(), OnlinePayActivity.class);
-                //intent.putExtra("doctor",doctorData);
+                intent.putExtra("docId",docId);
+                intent.putExtra("type",type);
                 parent.getContext().startActivity(intent);
             }
         });

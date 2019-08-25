@@ -69,7 +69,7 @@ public class ViewHistoryActivity extends AppCompatActivity {
                 .build();
         NetRequestService netRequestService = retrofit.create(NetRequestService.class);
         Call<ResponseBody> call;
-        if (name.equals("袖带压") || name.equals("收缩压") || name.equals("舒张压")) {
+        if (name.equals("袖带压") || name.equals("收缩压") || name.equals("舒张压") || name.equals("心率")) {
             call = netRequestService.getBpHistory(LoginActivity.sp.getString("token", ""),7);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
@@ -111,7 +111,7 @@ public class ViewHistoryActivity extends AppCompatActivity {
                                             Collections.reverse(xList);
                                             Collections.reverse(yList);
                                             lineView.setData(xList,yList);
-                                        } else {
+                                        } else if (name.equals("舒张压")){
                                             for (int i = 0; i < array.length(); i++) {
                                                 JSONObject object = array.getJSONObject(i);
                                                 report = new Report(name,String.valueOf(object.getInt("diastolicPressure")),
@@ -123,6 +123,20 @@ public class ViewHistoryActivity extends AppCompatActivity {
                                             Collections.reverse(xList);
                                             Collections.reverse(yList);
                                             lineView.setData(xList,yList);
+                                        } else {
+
+                                            for (int i = 0; i < array.length(); i++) {
+                                                JSONObject object = array.getJSONObject(i);
+                                                report = new Report(name,String.valueOf(object.getInt("heartRate")),
+                                                        object.getString("recordTime"));
+                                                reportList.add(report);
+                                                xList.add(object.getString("recordTime").substring(5,10));
+                                                yList.add((float) object.getInt("heartRate"));
+                                            }
+                                            Collections.reverse(xList);
+                                            Collections.reverse(yList);
+                                            lineView.setData(xList,yList);
+
                                         }
                                         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ViewHistoryActivity.this);
                                         recyclerView.setLayoutManager(linearLayoutManager);
